@@ -1,0 +1,26 @@
+# ==============================================================================
+# Aquora: Marine Debris Triage Dashboard — Render Production Blueprint
+# Automated Cloud Deployment Specification for FastAPI Backend
+# ==============================================================================
+
+services:
+  - type: web
+    name: aquora-backend
+    runtime: docker
+    dockerContext: ./backend
+    dockerfilePath: Dockerfile
+    plan: free
+    region: oregon
+    healthCheckPath: /health
+    autoDeploy: true
+    envVars:
+      - key: PORT
+        value: 8000
+      - key: HOST
+        value: 0.0.0.0
+      - key: ENVIRONMENT
+        value: production
+      - key: PYTHONUNBUFFERED
+        value: "1"
+      - key: PYTHONDONTWRITEBYTECODE
+        value: "1"

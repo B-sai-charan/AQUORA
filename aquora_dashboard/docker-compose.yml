@@ -1,0 +1,51 @@
+# ==============================================================================
+# Aquora: Marine Debris Triage Dashboard — Multi-Region Production Orchestration
+# Big Data Pipeline, NetCDF Caching Volume, and Web-GIS Map Engine
+# ==============================================================================
+
+version: '3.8'
+
+services:
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: aquora-backend
+    restart: unless-stopped
+    ports:
+      - "8000:8000"
+    environment:
+      - PORT=8000
+      - HOST=0.0.0.0
+      - ENVIRONMENT=production
+    volumes:
+      # Mount local NetCDF data cache for real-time oceanographic ingestion
+      - ./backend/data:/app/data
+    networks:
+      - aquora-net
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: aquora-frontend
+    restart: unless-stopped
+    ports:
+      - "5173:5173"
+    environment:
+      - VITE_API_BASE_URL=http://localhost:8000
+    depends_on:
+      backend:
+        condition: service_healthy
+    networks:
+      - aquora-net
+
+networks:
+  aquora-net:
+    driver: bridge
